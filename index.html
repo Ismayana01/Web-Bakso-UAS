@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peta QGIS dan Bakso Besar Turlappae</title>
+
+    <!-- Include Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Global styling */
+        body {
+            font-family: 'Open Sans', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #6e6e70;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        /* Header Section */
+        .header {
+            background: linear-gradient(45deg, #1a2b3c, #354f6a);
+            color: rgb(255, 255, 255);
+            padding: 20px;
+            text-align: center;
+            font-size: 2em;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .nav {
+            margin-top: 10px;
+        }
+
+        .nav a {
+            color: rgb(63, 79, 83);
+            text-decoration: none;
+            margin: 0 20px;
+            font-size: 1.1em;
+            transition: color 0.3s ease;
+        }
+
+        .nav a:hover {
+            color: #f39c12;
+            text-decoration: underline;
+        }
+
+        /* Peta QGIS Section */
+        #map {
+            height: 500px;
+            width: 100%;
+            margin-top: 40px;
+        }
+
+        /* Bakso Info Box */
+        .info-box {
+            padding: 20px;
+            background-color: #ffffff;
+            box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .info-box h2 {
+            font-size: 2em;
+            margin-top: 0;
+            color: #2c3e50;
+        }
+
+        .rating {
+            color: #f39c12;
+            margin: 10px 0;
+        }
+
+        .address,
+        .status {
+            color: #7f8c8d;
+            margin: 5px 0;
+        }
+
+        .status {
+            font-weight: bold;
+            color: #e0402e;
+        }
+
+        .info-box img {
+            width: 100%;
+            max-width: 600px;
+            height: auto;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Menu pricing list */
+        .menu ul {
+            list-style-type: none;
+            padding: 0;
+            margin-top: 20px;
+        }
+
+        .menu ul li {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #ddd;
+            font-size: 1.3em;
+        }
+
+        .menu ul li span:first-child {
+            font-weight: bold;
+        }
+
+        /* Button Styling */
+        .btn {
+            display: inline-block;
+            background-color: #f39c12;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            background-color: #e67e22;
+            transform: scale(1.1);
+        }
+
+        .menu-button {
+            background-color: #2ecc71;
+            padding: 10px;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.2em;
+        }
+
+        .menu-content {
+            display: none;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .menu-content.active {
+            display: block;
+        }
+
+        /* Footer Section */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background: #030303;
+            color: white;
+            font-size: 1em;
+            position: relative;
+            width: 100%;
+            bottom: 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Header Section -->
+    <div class="header">
+        <div class="logo">Bakso Besar Turlappae</div>
+    </div>
+
+    <!-- Peta QGIS Section -->
+    <div class="content">
+        <h1>Menampilkan Peta QGIS</h1>
+        <div id="map"></div>
+    </div>
+    
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+    // Initialize map
+    var map = L.map('map').setView([-6.133555, 120.462771], 13);
+
+    // Add OpenStreetMap tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+    // Define custom icons for each category
+    var schoolIcon = L.icon({
+        iconUrl: 'icon sekolah.png',  // Pastikan file ini ada di direktori yang benar
+        iconSize: [25, 25],  // Ukuran ikon bisa disesuaikan
+    });
+
+    var mosqueIcon = L.icon({
+        iconUrl: 'icon mesjid.png',  // Pastikan file ini ada di direktori yang benar
+        iconSize: [25, 25],  // Ukuran ikon bisa disesuaikan
+    });
+    function showPopup(event, mosqueName) {
+        const popup = document.getElementById('popup');
+        popup.innerHTML = mosqueName;
+        popup.style.left = event.pageX + 'px';
+        popup.style.top = event.pageY + 'px';
+        popup.style.display = 'block';
+    };
+
+   
+    // Define custom styles for Kota Benteng and Jalan
+    var kotaBentengStyle = {
+        color: "#7f8c8d",  // Ubah warna sesuai kebutuhan
+        weight: 5,  // Tebal garis
+        opacity: 1
+    };
+
+    var jalanStyle = {
+        color: "#030303",  // Ubah warna sesuai kebutuhan
+        weight: 3,  // Tebal garis
+        opacity: 0.7
+    };
+
+    // Function to display the Bakso info popup when a point is clicked
+    function showBaksoInfo() {
+        var baksoPopup = `
+            <h2>Bakso Besar Turlappae</h2>
+            <div class="rating">Rating: 4.5 (60 reviews)</div>
+            <div class="address">Alamat: Jl. KH Abdul Kadir Kasim, Sulawesi Selatan</div>
+            <div class="status">Buka 08:00 - Tutup 22:00</div>
+            <img src="https://storage.googleapis.com/a1aa/image/IYLcLyYs3v4NNVEyVjcSbMvLARfmP1fndDytR8SwLjCzSHzTA.jpg" alt="Bakso Besar Turlappae" width="100%" />
+            <div class="menu">
+                <h3>Harga Mulai Rp. 16.000</h3>
+                <ul>
+                    
+                </ul>
+                <button class="menu-button" onclick="toggleMenu()"> Menu</button>
+                <div class="menu-content">
+                    <ul class="menu">
+    <li><span>Bakso Biasa</span><span> Rp 16.000</span></li>
+    <li><span>Bakso Urat</span><span> Rp 18.000</span></li>
+    <li><span>Bakso Keju</span><span> Rp 20.000</span></li>
+    <li><span>Bakso Granak</span><span> Rp 20.000</span></li>
+    <li><span>Bakso Kotak</span><span> Rp 20.000</span></li>
+    <li><span>Bakso Tahu</span><span> Rp 22.000</span></li>
+    <li><span>Bakso Mercon</span><span> Rp 23.000</span></li>
+    <li><span>Bakso Jumbo</span><span> Rp 26.000</span></li>
+    <li><span>Bakso Campur</span><span> Rp 28.000</span></li>
+    <li><span>Bakso Mangkok</span><span> Rp 37.000</span></li>
+    <li><span>Bakso Jumbo Super</span><span> Rp 42.000</span></li>
+    <li><span>Bakso Lava</span><span> Rp 45.000</span></li>
+    <li><span>Bakso Beranak</span><span> Rp 45.000</span></li>
+    <li><span>Es Teh</span><span> Rp 7.000</span></li>
+    <li><span>Le Mineral</span><span> Rp 7.000</span></li>
+    <li><span>Es Jeruk</span><span> Rp 7.000</span></li>
+</ul>
+
+                </div>
+            </div>
+        `;
+
+        // Add a marker and bind the popup
+        var baksoMarker = L.marker([-6.133555, 120.462771]).addTo(map);
+        baksoMarker.bindPopup(baksoPopup).openPopup();
+    }
+
+    // Event listener to trigger Bakso info on map click
+    map.on('click', function (e) {
+        showBaksoInfo();
+    });
+
+    // Toggle menu visibility
+    function toggleMenu() {
+        const menuContent = document.querySelector('.menu-content');
+        menuContent.classList.toggle('active');
+    }
+
+    // Load GeoJSON data for different layers with custom icons and styles
+    function loadGeoJSON(filePath, icon, style) {
+        fetch(filePath)
+            .then(response => response.json())
+            .then(data => {
+                L.geoJSON(data, {
+                    pointToLayer: function (feature, latlng) {
+                        // Check if the feature has a 'name' or 'nama' property for display
+                        var popupContent = "";
+                        if (feature.properties.name) {
+                            popupContent = "<h3>" + feature.properties.name + "</h3>";
+                        } else if (feature.properties.nama) {
+                            popupContent = "<h3>" + feature.properties.nama + "</h3>";
+                        }
+                        var marker = L.marker(latlng, { icon: icon }).addTo(map);
+                        marker.bindPopup(popupContent);  // Show name in popup
+                    },
+                    style: style
+                }).addTo(map);
+            })
+            .catch(error => console.log('Error loading GeoJSON:', error));
+    }
+
+    // Load GeoJSON files with appropriate markers and styles
+    loadGeoJSON('sekolah.geojson', schoolIcon, null);  // GeoJSON for Sekolah
+    loadGeoJSON('mesjid.geojson', mosqueIcon, null);   // GeoJSON for Mesjid
+    loadGeoJSON('bakso.geojson', null, null);  // GeoJSON for Bakso
+    loadGeoJSON('kota benteng.geojson', null, kotaBentengStyle);  // GeoJSON for Kota Benteng
+    loadGeoJSON('jalan.geojson', null, jalanStyle);  // GeoJSON for Jalan
+</script>
+
+
+    <!-- Footer Section -->
+    <div class="footer">
+        Tentang Bakso Besar Turlappae
+    </div>
+
+</body>
+
+</html>
